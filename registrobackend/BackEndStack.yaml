@@ -1,0 +1,142 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Basic backend for a web app.
+Resources:
+
+  RegistrationTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: RegistrationTable
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        - AttributeName: email
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+        - AttributeName: nombre
+          AttributeType: S
+        - AttributeName: telefono
+          AttributeType: S
+        - AttributeName: empresa
+          AttributeType: S
+        - AttributeName: pais
+          AttributeType: S
+        - AttributeName: industria
+          AttributeType: S
+        - AttributeName: conocimiento
+          AttributeType: S
+
+  RegistrationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: RegistrationFunction
+      Runtime: python3.12
+      Handler: index.handler
+      Code:
+        ZipFile: |
+          import boto3
+          from botocore.exceptions import ClientError
+
+          dynamodb = boto3.resource('dynamodb')
+          table = dynamodb.Table(os.environ['TABLE_NAME'])
+
+          def handler(event, context):
+            try:
+              item = {
+                'id': event['id'],
+                'email': event['email'],
+                'nombre': event['nombre'],
+                'telefono': event['telefono'],
+                'empresa': event['empresa'],
+                'pais': event['pais'],
+                'industria': event['industria'],
+                'conocimiento': event['conocimiento']
+              }
+              table.put_item(Item=item)
+              return {'statusCode': 200, 'body': 'Item saved successfully'}
+            except ClientError as e:
+              return {'statusCode': 500, 'body': f'Error saving item: {e}'}
+      Environment:
+        Variables:
+          TABLE_NAME: !GetAtt RegistrationTable.TableNam
+      Role: !GetAtt LambdaRole.Arn
+
+  #lambda role for writing to the dynamodb table
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: LambdaRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - PolicyName: LambdaDynamoDBPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:BatchWriteItem
+                Resource: !GetAtt RegistrationTable.Arn
+
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: registroapi
+      Description: API Gateway for registration app
+
+  ApiGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: hello
+
+  ApiGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ResourceId: !Ref ApiGatewayResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RegistrationFunction.Arn}/invocations
+
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - ApiGatewayMethod
+    Properties:
+      RestApiId: !Ref ApiGateway
+      StageName: prod
+
+Outputs:
+  ApiGatewayUrl:
+    Value: !Sub https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/hello
+  RegistrationFunctionArn:
+    Value: !GetAtt RegistrationFunction.Arn
+  RegistrationTableArn:
+    Value: !GetAtt RegistrationTable.Arn
+  RegistrationTableName:
+    Value: !Ref RegistrationTable
+  LambdaRoleArn:
+    Value: !GetAtt LambdaRole.Ar

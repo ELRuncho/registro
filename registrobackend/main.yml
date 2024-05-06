@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: a simple web registration app
+  
+Resources:
+
+  BackEndStack:
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: file://BackEndStack.yaml
+
+  FrontEndStack:
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: file://FrontEndStack.yaml
+
+Outputs:
+  site:
+    Value: !GetAtt FrontEndStack.Outputs.WebAppCloudFrontDistribution
