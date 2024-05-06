@@ -12,7 +12,7 @@ with open(template_path, 'r') as template_file:
 
 # create a cfn stack
 response = cfn_client.create_stack(
-    StackName='registrobackend',
+    StackName='registroback',
     TemplateBody=template_body,
     Capabilities=['CAPABILITY_NAMED_IAM']
 )

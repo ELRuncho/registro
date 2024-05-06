@@ -6,12 +6,12 @@ Resources:
   BackEndStack:
     Type: AWS::CloudFormation::Stack
     Properties: 
-      TemplateURL: file://BackEndStack.yaml
+      TemplateURL: https://raw.githubusercontent.com/ELRuncho/registro/main/registrobackend/BackEndStack.yaml
 
   FrontEndStack:
     Type: AWS::CloudFormation::Stack
     Properties: 
-      TemplateURL: file://FrontEndStack.yaml
+      TemplateURL: https://raw.githubusercontent.com/ELRuncho/registro/main/registrobackend/FrontEndStack.yaml
 
 Outputs:
   site:
