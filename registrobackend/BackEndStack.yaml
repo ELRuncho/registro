@@ -20,18 +20,6 @@ Resources:
           AttributeType: S
         - AttributeName: email
           AttributeType: S
-        - AttributeName: nombre
-          AttributeType: S
-        - AttributeName: telefono
-          AttributeType: S
-        - AttributeName: empresa
-          AttributeType: S
-        - AttributeName: pais
-          AttributeType: S
-        - AttributeName: industria
-          AttributeType: S
-        - AttributeName: conocimiento
-          AttributeType: S
 
   RegistrationFunction:
     Type: AWS::Lambda::Function
