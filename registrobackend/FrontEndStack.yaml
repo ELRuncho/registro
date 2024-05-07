@@ -7,7 +7,7 @@ Resources:
   WebAppBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: frontend-registro
+      BucketName: frontend-registro-1654654
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: error.html

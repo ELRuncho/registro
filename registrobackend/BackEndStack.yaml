@@ -70,8 +70,9 @@ Resources:
                 - lambda.amazonaws.com
             Action:
               - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
-        - AWSLambdaBasicExecutionRole
         - PolicyName: LambdaDynamoDBPolicy
           PolicyDocument:
             Version: 2012-10-17
